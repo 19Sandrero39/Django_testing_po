@@ -1,0 +1,20 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Все книги{% endblock %}
+
+{% block content %}
+  <h1>Все книги</h1>
+
+  <ul class="book-list">
+    {% for book in books %}
+      <li class="book-item">
+        <a href="{% url 'book_detail' book.pk %}">
+          <span class="book-title">{{ book.title }}</span>
+          <span class="book-author">{{ book.author }}</span>
+        </a>
+      </li>
+    {% empty %}
+      <li class="empty">Пока нет книг. Добавь их через /admin/</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

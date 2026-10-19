@@ -1,0 +1,19 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}Библиотека{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'books/style.css' %}" />
+    </head>
+    <body>
+        <header class="site-header">
+            <a href="{% url 'book_list' %}" class="logo">📚 Библиотека</a>
+        </header>
+
+        <main class="container">{% block content %}{% endblock %}</main>
+
+        <footer class="site-footer">Мини лабораторная работа · Django</footer>
+    </body>
+</html>

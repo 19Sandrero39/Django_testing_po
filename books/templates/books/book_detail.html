@@ -1,0 +1,16 @@
+{% extends 'books/base.html' %} {% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<article class="book-card">
+    <h1>{{ book.title }}</h1>
+    <p class="author">{{ book.author }}</p>
+
+    <p class="description">
+        {{ book.description|default:"Описание пока не добавлено." }}
+    </p>
+
+    <p class="date">Добавлено: {{ book.created_at|date:"d.m.Y H:i" }}</p>
+    <p class="date">Просмотры: {{ book.likes }}</p>
+</article>
+
+<a href="{% url 'book_list' %}" class="back-link">← Назад к списку</a>
+{% endblock %}
