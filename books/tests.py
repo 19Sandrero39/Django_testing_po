@@ -124,3 +124,78 @@ class BookLikesTests(TestCase):
         self.client.get(reverse("book_list"))
         self.book.refresh_from_db()
         self.assertEqual(self.book.likes, 0)
+
+
+class BookCrudTests(TestCase):
+    """Проверки создания, редактирования и удаления."""
+
+    def setUp(self):
+        self.book = Book.objects.create(title="Старое", author="Автор")
+
+    def test_create_page_opens(self):
+        # Форма создания открывается
+        response = self.client.get(reverse("book_create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "books/book_form.html")
+
+    def test_create_book_saves_to_db(self):
+        # POST с верными данными создаёт книгу и ведёт на список
+        response = self.client.post(
+            reverse("book_create"),
+            {
+                "title": "Новая",
+                "author": "Новый автор",
+                "description": "Текст",
+            },
+        )
+        self.assertRedirects(response, reverse("book_list"))
+        self.assertTrue(Book.objects.filter(title="Новая").exists())
+
+    def test_create_new_book_has_zero_likes(self):
+        # Книга, созданная через форму, имеет 0 просмотров
+        self.client.post(reverse("book_create"), {"title": "Х", "author": "Y"})
+        self.assertEqual(Book.objects.get(title="Х").likes, 0)
+
+    def test_create_invalid_data_not_saved(self):
+        # Пустое название: книга не создаётся, форма показывает ошибку
+        response = self.client.post(
+            reverse("book_create"), {"title": "", "author": "A"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Book.objects.count(), 1)
+        self.assertTrue(response.context["form"].errors)
+
+    def test_update_book_changes_data(self):
+        # POST на редактирование меняет данные
+        response = self.client.post(
+            reverse("book_update", args=[self.book.pk]),
+            {
+                "title": "Изменённое",
+                "author": "Автор",
+            },
+        )
+        self.assertRedirects(response, reverse("book_list"))
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.title, "Изменённое")
+
+    def test_update_page_prefilled(self):
+        # Форма редактирования содержит текущие данные
+        response = self.client.get(reverse("book_update", args=[self.book.pk]))
+        self.assertContains(response, "Старое")
+
+    def test_update_nonexistent_returns_404(self):
+        # Редактирование несуществующей книги даёт 404
+        response = self.client.get(reverse("book_update", args=[9999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_get_shows_confirmation_and_keeps_book(self):
+        # GET показывает подтверждение и ничего не удаляет
+        response = self.client.get(reverse("book_delete", args=[self.book.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Book.objects.filter(pk=self.book.pk).exists())
+
+    def test_delete_post_removes_book(self):
+        # POST удаляет книгу и ведёт на список
+        response = self.client.post(reverse("book_delete", args=[self.book.pk]))
+        self.assertRedirects(response, reverse("book_list"))
+        self.assertFalse(Book.objects.filter(pk=self.book.pk).exists())

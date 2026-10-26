@@ -4,6 +4,7 @@
 
 {% block content %}
   <h1>Все книги</h1>
+  <a href="{% url 'book_create' %}" class="btn">+ Добавить книгу</a>
 
   <ul class="book-list">
     {% for book in books %}
